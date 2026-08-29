@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 
 // CHANGE THIS to your real domain before you deploy.
 // RSS, sitemap and social tags all build absolute URLs from it.
-const SITE = 'https://thomash0122.github.io';
+const SITE = 'https://example.com';
 
 export default defineConfig({
   site: SITE,

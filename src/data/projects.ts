@@ -19,7 +19,7 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    repo: 'thomash0122/bc-edi-toolkit',
+    repo: 'yourusername/bc-edi-toolkit',
     name: 'BC EDI Toolkit',
     blurb:
       'AL extension that handles inbound 850 and outbound 855/856/810 documents in Business Central, with a partner-agnostic mapping layer so you are not rewriting codeunits for every new trading partner.',
@@ -27,14 +27,14 @@ export const projects: Project[] = [
     featured: true,
   },
   {
-    repo: 'thomash0122/power-automate-bc-patterns',
+    repo: 'yourusername/power-automate-bc-patterns',
     name: 'Power Automate BC Patterns',
     blurb:
       'A set of importable flow templates for the things every Business Central integration needs: authenticated API calls, exponential backoff, and failure alerting that does not spam the channel.',
     topics: ['power-automate', 'business-central', 'integration'],
   },
   {
-    repo: 'thomash0122/x12-inspector',
+    repo: 'yourusername/x12-inspector',
     name: 'X12 Inspector',
     blurb:
       'Command-line tool that parses an X12 interchange and prints it as readable, indented segments. Written because reading a raw 856 in a text editor at midnight is not a reasonable thing to ask of anyone.',
