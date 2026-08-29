@@ -16,6 +16,7 @@ export const TOPIC_SLUGS = [
   'power-bi',
   'azure',
   'integration',
+  'ai-agents',
 ] as const;
 
 export type TopicSlug = (typeof TOPIC_SLUGS)[number];
@@ -62,6 +63,10 @@ export const topics: Record<TopicSlug, Topic> = {
   integration: {
     label: 'Integration & APIs',
     blurb: 'The general problem: getting two systems to agree, reliably, forever.',
+  },
+  'ai-agents': {
+    label: 'AI Agents',
+    blurb: 'Copilot, agent frameworks, and putting LLMs to work against business data without letting them near the ledger.',
   },
 };
 
