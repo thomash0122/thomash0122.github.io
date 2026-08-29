@@ -1,0 +1,95 @@
+---
+import { Font } from 'astro:assets';
+import { site } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** og:type — "article" on post pages. */
+  ogType?: 'website' | 'article';
+}
+
+const { title = site.name, description = site.tagline, ogType = 'website' } =
+  Astro.props;
+
+const fullTitle = title === site.name ? `${site.name} — ${site.tagline}` : `${title} — ${site.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const nav = [
+  { label: 'blog', href: '/blog' },
+  { label: 'topics', href: '/topics' },
+  { label: 'projects', href: '/projects' },
+  { label: 'about', href: '/about' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.name} — all posts`}
+      href={new URL('rss.xml', Astro.site)}
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="author" content={site.name} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={site.name} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-mono" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="shell">
+      <header class="masthead" data-pagefind-ignore="all">
+        <a class="masthead__name" href="/">{site.name}</a>
+        <nav class="masthead__nav" aria-label="Main">
+          {
+            nav.map((item) => (
+              <a
+                class="masthead__link"
+                href={item.href}
+                aria-current={
+                  path === item.href || path.startsWith(item.href + '/')
+                    ? 'page'
+                    : undefined
+                }
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+
+      <main id="main">
+        <slot />
+      </main>
+
+      <footer class="colophon" data-pagefind-ignore="all">
+        <span>&copy; {new Date().getFullYear()} {site.name}</span>
+        <div class="colophon__links">
+          {site.links.map((link) => <a href={link.href}>{link.label}</a>)}
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

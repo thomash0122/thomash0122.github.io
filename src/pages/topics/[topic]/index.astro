@@ -1,0 +1,63 @@
+---
+import Base from '../../../layouts/Base.astro';
+import YearGroup from '../../../components/YearGroup.astro';
+import Entry from '../../../components/Entry.astro';
+import { getPosts, groupByYear, minutesFor, type Post } from '../../../lib/posts';
+import { TOPIC_SLUGS, topics, type TopicSlug } from '../../../data/topics';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return TOPIC_SLUGS.map((topic) => ({
+    params: { topic },
+    props: {
+      topic,
+      posts: posts.filter((post) => post.data.topics.includes(topic)),
+    },
+  }));
+}
+
+interface Props {
+  topic: TopicSlug;
+  posts: Post[];
+}
+
+const { topic, posts } = Astro.props;
+const meta = topics[topic];
+const groups = groupByYear(posts);
+---
+
+<Base title={meta.label} description={meta.blurb}>
+  <h1 class="page-title">{meta.label}</h1>
+  <p class="lede">{meta.blurb}</p>
+
+  <h2 class="section-label">
+    {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+    <a href={`/topics/${topic}/rss.xml`}>Feed for this topic →</a>
+  </h2>
+
+  {
+    posts.length === 0 ? (
+      <p class="entry__desc">
+        Nothing here yet. <a href="/blog">Browse everything</a> in the meantime.
+      </p>
+    ) : (
+      groups.map(([year, items]) => (
+        <YearGroup year={year}>
+          {items.map((post) => (
+            <Entry
+              level={3}
+              title={post.data.title}
+              href={`/blog/${post.id}`}
+              date={post.data.pubDate}
+              minutes={minutesFor(post)}
+              description={post.data.description}
+              topics={post.data.topics}
+            />
+          ))}
+        </YearGroup>
+      ))
+    )
+  }
+
+  <a class="more-link" href="/topics">All topics</a>
+</Base>

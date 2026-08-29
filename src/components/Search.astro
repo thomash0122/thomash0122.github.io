@@ -1,0 +1,166 @@
+---
+interface Props {
+  /** id of the element to hide while search results are showing. */
+  hides: string;
+  placeholder?: string;
+}
+const { hides, placeholder = 'Search posts…' } = Astro.props;
+---
+
+<div class="search" data-pagefind-ignore="all">
+  <label class="visually-hidden" for="site-search">Search posts</label>
+  <input
+    class="search__input"
+    id="site-search"
+    type="search"
+    autocomplete="off"
+    spellcheck="false"
+    placeholder={placeholder}
+  />
+  <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
+  <ol class="search__results" id="search-results" hidden></ol>
+</div>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>
+
+{/*
+  is:inline keeps this out of the Vite bundle, so the runtime import of
+  /pagefind/pagefind.js isn't resolved at build time. That file only exists
+  after `pagefind --site dist` runs, which means search does not work in
+  `astro dev` — the box says so rather than failing silently.
+*/}
+<script is:inline define:vars={{ hides }}>
+  (() => {
+    const input = document.getElementById('site-search');
+    const status = document.getElementById('search-status');
+    const list = document.getElementById('search-results');
+    const archive = document.getElementById(hides);
+    if (!input || !status || !list) return;
+
+    let engine;
+    let loading;
+    let seq = 0;
+
+    async function load() {
+      if (engine !== undefined) return engine;
+      if (loading) return loading;
+      loading = (async () => {
+        try {
+          const mod = await import('/pagefind/pagefind.js');
+          await mod.init();
+          engine = mod;
+        } catch {
+          engine = null;
+        }
+        return engine;
+      })();
+      return loading;
+    }
+
+    function reset() {
+      list.hidden = true;
+      list.replaceChildren();
+      status.textContent = '';
+      if (archive) archive.hidden = false;
+    }
+
+    async function run(query) {
+      const mine = ++seq;
+
+      if (query.length < 2) {
+        reset();
+        return;
+      }
+
+      if (archive) archive.hidden = true;
+      status.textContent = 'Searching…';
+
+      const pf = await load();
+      if (mine !== seq) return;
+
+      if (!pf) {
+        status.textContent =
+          'Search index not found. Run `npm run build` — search works on the built site, not in dev.';
+        list.hidden = true;
+        return;
+      }
+
+      const search = await pf.search(query);
+      if (mine !== seq) return;
+
+      const results = await Promise.all(
+        search.results.slice(0, 10).map((r) => r.data())
+      );
+      if (mine !== seq) return;
+
+      list.replaceChildren();
+
+      if (results.length === 0) {
+        status.textContent = `No posts match “${query}”.`;
+        list.hidden = true;
+        return;
+      }
+
+      status.textContent = `${results.length} result${
+        results.length === 1 ? '' : 's'
+      } for “${query}”.`;
+
+      for (const result of results) {
+        const li = document.createElement('li');
+        li.className = 'search__result';
+
+        const h = document.createElement('h2');
+        h.className = 'search__result-title';
+        const a = document.createElement('a');
+        a.href = result.url;
+        a.textContent = result.meta?.title || result.url;
+        h.appendChild(a);
+
+        const p = document.createElement('p');
+        p.className = 'search__excerpt';
+        // Pagefind returns an escaped excerpt whose only markup is <mark>.
+        p.innerHTML = result.excerpt;
+
+        li.append(h, p);
+        list.appendChild(li);
+      }
+
+      list.hidden = false;
+    }
+
+    let timer;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      const value = input.value.trim();
+      timer = setTimeout(() => run(value), 180);
+    });
+
+    // Warm the index on first focus so the first keystroke feels instant.
+    input.addEventListener('focus', load, { once: true });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        input.value = '';
+        reset();
+      }
+    });
+
+    // "/" focuses search, the way most docs sites behave.
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey) return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      event.preventDefault();
+      input.focus();
+    });
+  })();
+</script>

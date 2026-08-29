@@ -1,0 +1,26 @@
+---
+import { topics, type TopicSlug } from '../data/topics';
+
+interface Props {
+  topics: TopicSlug[];
+  /** Renders plain labels instead of links, for use inside another link. */
+  static?: boolean;
+}
+const { topics: slugs, static: isStatic = false } = Astro.props;
+---
+
+<ul class="chips">
+  {
+    slugs.map((slug) => (
+      <li>
+        {isStatic ? (
+          <span class="chip">{topics[slug].label}</span>
+        ) : (
+          <a class="chip" href={`/topics/${slug}`}>
+            {topics[slug].label}
+          </a>
+        )}
+      </li>
+    ))
+  }
+</ul>

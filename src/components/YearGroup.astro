@@ -1,0 +1,26 @@
+---
+interface Props {
+  year: number | string;
+  list?: boolean;
+}
+const { year, list = true } = Astro.props;
+
+// The year labels the section rather than acting as a heading, so entry titles
+// keep a correct heading level on every page that uses the rail.
+const labelId = `year-${year}`;
+---
+
+<section class="rail-group" aria-labelledby={labelId}>
+  <p class="rail-group__year" id={labelId}>{year}</p>
+  {
+    list ? (
+      <ol class="rail-group__items">
+        <slot />
+      </ol>
+    ) : (
+      <div class="rail-group__items">
+        <slot />
+      </div>
+    )
+  }
+</section>

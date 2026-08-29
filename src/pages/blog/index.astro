@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import YearGroup from '../../components/YearGroup.astro';
+import Entry from '../../components/Entry.astro';
+import Search from '../../components/Search.astro';
+import { getPosts, groupByYear, minutesFor } from '../../lib/posts';
+
+const posts = await getPosts();
+const groups = groupByYear(posts);
+---
+
+<Base
+  title="Blog"
+  description="Every post on Business Central, EDI, Power Automate and the Power Platform."
+>
+  <h1 class="page-title">Blog</h1>
+  <p class="lede">
+    {posts.length} {posts.length === 1 ? 'post' : 'posts'}, newest first. Press
+    <code>/</code> to search.
+  </p>
+
+  <Search hides="archive" />
+
+  <div id="archive">
+    {
+      groups.map(([year, items]) => (
+        <YearGroup year={year}>
+          {items.map((post) => (
+            <Entry
+              level={2}
+              title={post.data.title}
+              href={`/blog/${post.id}`}
+              date={post.data.pubDate}
+              minutes={minutesFor(post)}
+              description={post.data.description}
+              topics={post.data.topics}
+            />
+          ))}
+        </YearGroup>
+      ))
+    }
+  </div>
+</Base>

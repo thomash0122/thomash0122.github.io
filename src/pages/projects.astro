@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+import Chips from '../components/Chips.astro';
+import { projects } from '../data/projects';
+import { fetchAllStats, relativeDate } from '../lib/github';
+
+// Live stats are merged in at build time. If GitHub is unreachable or rate
+// limited, `stats` is null for that repo and the card simply renders without
+// the numbers — the build never fails over decoration.
+const stats = await fetchAllStats(projects.map((p) => p.repo));
+
+const ordered = [...projects].sort(
+  (a, b) => Number(b.featured ?? false) - Number(a.featured ?? false)
+);
+---
+
+<Base
+  title="Projects"
+  description="Open-source tools for Business Central, EDI and the Power Platform."
+>
+  <h1 class="page-title">Projects</h1>
+  <p class="lede">
+    Things I've built and put on GitHub, mostly to stop myself solving the same
+    problem twice.
+  </p>
+
+  <ol class="projects">
+    {
+      ordered.map((project) => {
+        const s = stats.get(project.repo) ?? null;
+        return (
+          <li class="project">
+            <div class="project__head">
+              <h2 class="project__name">
+                <a href={`https://github.com/${project.repo}`}>{project.name}</a>
+              </h2>
+              {s && (
+                <p class="project__stats">
+                  {s.language && <span>{s.language}</span>}
+                  <span>★ {s.stars}</span>
+                  {s.pushedAt && <span>updated {relativeDate(s.pushedAt)}</span>}
+                  {s.archived && <span>archived</span>}
+                </p>
+              )}
+            </div>
+            <p class="project__repo">{project.repo}</p>
+            <p class="project__blurb">{project.blurb}</p>
+            <Chips topics={project.topics} />
+          </li>
+        );
+      })
+    }
+  </ol>
+</Base>

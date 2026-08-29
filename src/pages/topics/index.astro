@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getTopicCounts } from '../../lib/posts';
+import { allTopics } from '../../data/topics';
+
+const counts = await getTopicCounts();
+const ordered = [...allTopics].sort(
+  (a, b) => counts[b.slug] - counts[a.slug] || a.label.localeCompare(b.label)
+);
+---
+
+<Base title="Topics" description="Everything on this site, organised by subject.">
+  <h1 class="page-title">Topics</h1>
+  <p class="lede">
+    A fixed set of subjects rather than free-form tags, so every topic here has a
+    real page behind it. Each one has its own feed.
+  </p>
+
+  <ul class="topic-grid">
+    {
+      ordered.map((topic) => (
+        <li>
+          <a
+            class="topic-card"
+            href={`/topics/${topic.slug}`}
+            data-empty={counts[topic.slug] === 0 ? 'true' : 'false'}
+          >
+            <span class="topic-card__head">
+              <span class="topic-card__label">{topic.label}</span>
+              <span class="topic-card__count">
+                {counts[topic.slug]} {counts[topic.slug] === 1 ? 'post' : 'posts'}
+              </span>
+            </span>
+            <span class="topic-card__blurb">{topic.blurb}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

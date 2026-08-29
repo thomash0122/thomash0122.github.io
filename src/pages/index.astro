@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import Entry from '../components/Entry.astro';
+import { getPosts, getTopicCounts, minutesFor } from '../lib/posts';
+import { allTopics } from '../data/topics';
+import { site } from '../data/site';
+
+const posts = await getPosts();
+const recent = posts.slice(0, 6);
+const counts = await getTopicCounts();
+
+// Topics with posts first, then empty ones — an empty topic still tells a
+// reader what this site covers, so it stays visible rather than disappearing.
+const ordered = [...allTopics].sort(
+  (a, b) => counts[b.slug] - counts[a.slug] || a.label.localeCompare(b.label)
+);
+---
+
+<Base>
+  <h1 class="page-title page-title--wide">{site.role}</h1>
+
+  <h2 class="section-label">
+    Topics
+    <a href="/topics">All topics →</a>
+  </h2>
+
+  <ul class="topic-grid">
+    {
+      ordered.map((topic) => (
+        <li>
+          <a
+            class="topic-card"
+            href={`/topics/${topic.slug}`}
+            data-empty={counts[topic.slug] === 0 ? 'true' : 'false'}
+          >
+            <span class="topic-card__head">
+              <span class="topic-card__label">{topic.label}</span>
+              <span class="topic-card__count">{counts[topic.slug]}</span>
+            </span>
+            <span class="topic-card__blurb">{topic.blurb}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2 class="section-label section-label--spaced">
+    Latest posts
+    <a href="/blog">All posts →</a>
+  </h2>
+
+  <ol class="rail-group__items">
+    {
+      recent.map((post) => (
+        <Entry
+          compact
+          level={3}
+          title={post.data.title}
+          href={`/blog/${post.id}`}
+          date={post.data.pubDate}
+          minutes={minutesFor(post)}
+          description={post.data.description}
+          topics={post.data.topics}
+        />
+      ))
+    }
+  </ol>
+</Base>

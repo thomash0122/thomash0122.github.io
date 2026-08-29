@@ -1,0 +1,99 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Chips from '../../components/Chips.astro';
+import { getPosts, getRelated, minutesFor, type Post } from '../../lib/posts';
+import { formatLongDate, isoDate } from '../../lib/format';
+import { topics } from '../../data/topics';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, pubDate, updatedDate, appliesTo, lastReviewed } =
+  post.data;
+const related = await getRelated(post);
+---
+
+<Base title={title} description={description} ogType="article">
+  {/* data-pagefind-body scopes the search index to post content only, so nav
+      and footer text never show up in results. */}
+  <article data-pagefind-body>
+    <header class="post-header">
+      <p class="post-header__meta">
+        <time datetime={isoDate(pubDate)}>{formatLongDate(pubDate)}</time>
+        · {minutesFor(post)} min read
+        {
+          updatedDate && (
+            <>
+              {' '}· updated{' '}
+              <time datetime={isoDate(updatedDate)}>{formatLongDate(updatedDate)}</time>
+            </>
+          )
+        }
+      </p>
+
+      <h1 class="post-header__title">{title}</h1>
+
+      {
+        appliesTo && appliesTo.length > 0 && (
+          <p class="applies-to">
+            <span class="applies-to__label">Written against</span>
+            {appliesTo.join(' · ')}
+            {lastReviewed && (
+              <>
+                <br />
+                <span class="reviewed">
+                  Last checked{' '}
+                  <time datetime={isoDate(lastReviewed)}>
+                    {formatLongDate(lastReviewed)}
+                  </time>
+                </span>
+              </>
+            )}
+          </p>
+        )
+      }
+
+      <Chips topics={post.data.topics} />
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+
+  <footer class="post-footer" data-pagefind-ignore="all">
+    {
+      related.length > 0 && (
+        <>
+          <h2 class="section-label">Related</h2>
+          <ol class="rail-group__items">
+            {related.map((item) => (
+              <li class="entry entry--compact">
+                <h3 class="entry__title">
+                  <a href={`/blog/${item.id}`}>{item.data.title}</a>
+                </h3>
+                <p class="entry__meta">
+                  {item.data.topics.map((slug) => topics[slug].label).join(' · ')}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </>
+      )
+    }
+
+    <p class="post-footer__nav"><a href="/blog">← All posts</a></p>
+  </footer>
+</Base>

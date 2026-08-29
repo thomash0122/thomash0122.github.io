@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import YearGroup from '../components/YearGroup.astro';
+import { profile } from '../data/profile';
+import { site } from '../data/site';
+
+function byStartYear<T extends { startYear: number }>(items: T[]): Array<[number, T[]]> {
+  const map = new Map<number, T[]>();
+  for (const item of items) {
+    const bucket = map.get(item.startYear);
+    if (bucket) bucket.push(item);
+    else map.set(item.startYear, [item]);
+  }
+  return [...map.entries()].sort((a, b) => b[0] - a[0]);
+}
+
+const roleGroups = byStartYear(profile.roles);
+---
+
+<Base title="About" description={profile.summary}>
+  <h1 class="page-title">About</h1>
+  <p class="lede">{profile.summary}</p>
+
+  <p class="print-only">{site.name} · {site.email} · github.com/{site.github}</p>
+
+  <h2 class="section-label">Certifications</h2>
+  <ul class="certs">
+    {
+      profile.certifications.map((cert) => (
+        <li>
+          <span class="certs__year">{cert.year}</span>
+          <span>{cert.name}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2 class="section-label section-label--spaced">Experience</h2>
+  {
+    roleGroups.map(([year, roles]) => (
+      <YearGroup year={year} list={false}>
+        {roles.map((role) => (
+          <article class="role">
+            <h3 class="role__title">{role.title}</h3>
+            <p class="role__org">
+              {role.org} · {role.period}
+              {role.location && ` · ${role.location}`}
+            </p>
+            <ul class="role__points">
+              {role.points.map((point) => (
+                <li>{point}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </YearGroup>
+    ))
+  }
+
+  <h2 class="section-label section-label--spaced">Skills</h2>
+  <dl class="skills">
+    {
+      profile.skills.map((group) => (
+        <div>
+          <dt>{group.label}</dt>
+          <dd>{group.items}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <p class="print-note">
+    Print this page to save it as a PDF — the print stylesheet drops the
+    navigation and sets it for paper.
+  </p>
+</Base>
