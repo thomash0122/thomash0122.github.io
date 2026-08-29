@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import SocialLinks from '../components/SocialLinks.astro';
 import { site } from '../data/site';
 import '../styles/global.css';
 
@@ -86,9 +87,7 @@ const nav = [
 
       <footer class="colophon" data-pagefind-ignore="all">
         <span>&copy; {new Date().getFullYear()} {site.name}</span>
-        <div class="colophon__links">
-          {site.links.map((link) => <a href={link.href}>{link.label}</a>)}
-        </div>
+        <SocialLinks />
       </footer>
     </div>
   </body>

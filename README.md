@@ -129,7 +129,7 @@ stops roles breaking across pages. Save as PDF from the print dialog.
 
 ## Deploying to GitHub Pages
 
-1. Name the repo `<yourusername>.github.io` and push to `main`. (Any other name
+1. Name the repo `<thomash0122>.github.io` and push to `main`. (Any other name
    serves from a subpath and needs `base` set in `astro.config.mjs`.)
 2. **Settings → Pages → Source → GitHub Actions.**
 3. Done. `.github/workflows/deploy.yml` builds and publishes on every push.
@@ -139,7 +139,7 @@ The workflow file must be on your default branch or nothing happens.
 ### Custom domain
 
 Add `public/CNAME` containing just your domain, then point DNS at GitHub: a
-`CNAME` record for `www` → `<yourusername>.github.io`, or `A` records at
+`CNAME` record for `www` → `<thomash0122>.github.io`, or `A` records at
 GitHub's Pages IPs for the apex. Tick **Enforce HTTPS** once the certificate
 provisions. Pages needs a **public** repo unless you're on a paid plan.
 
